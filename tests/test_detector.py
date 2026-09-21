@@ -13,6 +13,9 @@ from insight import detector
         ("Probability: 10", 10),
         ("UTF-8, Python 3.10, 10 functions, and Step 1", 5),
         ("AI_SCORE: 11", 5),
+        ("Score: 2\nAI_SCORE: 7", 7),
+        ("AI_SCORE: 11\nScore: 2", 5),
+        ("AI_SCORE:\n7", 5),
     ],
 )
 def test_explain_code_parses_only_labeled_scores(mocker, response_text, expected_score):

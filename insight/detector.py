@@ -7,17 +7,28 @@ from rich.panel import Panel
 
 console = Console()
 
-AI_SCORE_PATTERN = re.compile(
-    r"^\s*(?:AI_SCORE|Score|Probability)\s*:\s*(10|[1-9])"
-    r"(?:\s*/\s*10)?(?:\s|$)",
+AI_SCORE_LINE_PATTERN = re.compile(
+    r"^[ \t]*AI_SCORE[ \t]*:[ \t]*(?P<value>[^\r\n]*)$",
+    re.IGNORECASE | re.MULTILINE,
+)
+VALID_SCORE_PATTERN = re.compile(r"^(10|[1-9])(?:[ \t]*/[ \t]*10)?$")
+LABELED_SCORE_PATTERN = re.compile(
+    r"^[ \t]*(?:Score|Probability)[ \t]*:[ \t]*"
+    r"(?P<score>10|[1-9])(?:[ \t]*/[ \t]*10)?(?:[ \t]+.*)?$",
     re.IGNORECASE | re.MULTILINE,
 )
 
 
 def parse_ai_score(text: str) -> int:
     """Extract a labeled AI score, falling back to the neutral default."""
-    match = AI_SCORE_PATTERN.search(text)
-    return int(match.group(1)) if match else 5
+    ai_score_lines = list(AI_SCORE_LINE_PATTERN.finditer(text))
+    if ai_score_lines:
+        value = ai_score_lines[-1].group("value").strip()
+        match = VALID_SCORE_PATTERN.fullmatch(value)
+        return int(match.group(1)) if match else 5
+
+    match = LABELED_SCORE_PATTERN.search(text)
+    return int(match.group("score")) if match else 5
 
 
 def show_error(message):
